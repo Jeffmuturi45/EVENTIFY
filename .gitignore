@@ -1,0 +1,6 @@
+.env
+.env.*
+!.env.example
+
+# Django secret key
+secret_key.txt

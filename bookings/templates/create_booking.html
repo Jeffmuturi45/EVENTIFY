@@ -1,0 +1,277 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Tickets - EVENTIFY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .price-card {
+            border-left: 4px solid #007bff;
+        }
+        .ticket-option {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .ticket-option:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .ticket-option.selected {
+            border-color: #007bff;
+            background-color: #e7f1ff;
+        }
+        .price-highlight {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">🎪 EVENTIFY</a>
+            <span class="navbar-text text-light">
+                Welcome, {{ user.username }}
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Event Summary -->
+            <div class="col-md-5 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Event Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title">{{ event.title }}</h4>
+                        <p class="card-text text-muted">{{ event.short_description|default:event.description }}</p>
+                        
+                        <div class="mt-3">
+                            <p><strong><i class="bi bi-calendar-event"></i> Date:</strong> {{ event.start_date|date:"F d, Y" }}</p>
+                            <p><strong><i class="bi bi-clock"></i> Time:</strong> {{ event.start_date|time:"g:i A" }}</p>
+                            <p><strong><i class="bi bi-geo-alt"></i> Venue:</strong> {{ event.venue }}</p>
+                            <p><strong><i class="bi bi-ticket-perforated"></i> Available Tickets:</strong> {{ event.available_tickets }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <div class="mt-3">
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back to Events
+                    </a>
+                    <a href="{% url 'my_bookings' %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-list-ul"></i> My Bookings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-cart-plus"></i> Book Your Tickets</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Messages -->
+                        {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                <i class="bi bi-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %}"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            
+                            <!-- Ticket Type Selection -->
+                            <div class="mb-4">
+                                <h6 class="mb-3"><i class="bi bi-tag"></i> Select Ticket Type</h6>
+                                {% for ticket in ticket_types %}
+                                <div class="ticket-option position-relative">
+                                    <input type="radio" class="btn-check" name="ticket_type" 
+                                           id="ticket_{{ ticket.category }}" value="{{ ticket.category }}" 
+                                           {% if forloop.first %}checked{% endif %} required
+                                           {% if request.method == 'POST' and request.POST.ticket_type == ticket.category %}checked{% endif %}>
+                                    <label class="btn btn-outline-primary w-100 text-start" for="ticket_{{ ticket.category }}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">{{ ticket.get_category_display }} Ticket</h6>
+                                                <p class="mb-1 text-muted small">{{ ticket.description|default:"Standard admission" }}</p>
+                                                <p class="mb-0"><strong>KSh {{ ticket.price }}</strong> per ticket</p>
+                                            </div>
+                                            <div class="text-end">
+                                                <small class="text-muted d-block">Available: {{ ticket.quantity_available }}</small>
+                                                <span class="badge bg-{% if ticket.category == 'regular' %}secondary{% elif ticket.category == 'vip' %}warning{% else %}danger{% endif %}">
+                                                    {{ ticket.get_category_display }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% empty %}
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i> No tickets available for this event.
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Quantity Selection -->
+                            <div class="mb-4">
+                                <h6 class="mb-3"><i class="bi bi-123"></i> Number of Tickets</h6>
+                                <div class="row">
+                                    {% for i in "12345" %}
+                                    <div class="col-2">
+                                        <input type="radio" class="btn-check" name="quantity" 
+                                               id="quantity_{{ forloop.counter }}" value="{{ forloop.counter }}"
+                                               {% if forloop.first %}checked{% endif %} required
+                                               {% if request.method == 'POST' and request.POST.quantity == forloop.counter|stringformat:"i" %}checked{% endif %}>
+                                        <label class="btn btn-outline-secondary w-100" for="quantity_{{ forloop.counter }}">
+                                            {{ forloop.counter }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                    <div class="col-2">
+                                        <input type="radio" class="btn-check" name="quantity" id="quantity_custom" value="custom"
+                                               {% if request.method == 'POST' and request.POST.quantity == 'custom' %}checked{% endif %}>
+                                        <label class="btn btn-outline-secondary w-100" for="quantity_custom" data-bs-toggle="collapse" data-bs-target="#customQuantity">
+                                            More
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Custom Quantity Input -->
+                                <div class="collapse mt-2 {% if request.method == 'POST' and request.POST.quantity == 'custom' %}show{% endif %}" id="customQuantity">
+                                    <div class="card card-body">
+                                        <label for="custom_quantity" class="form-label">Enter quantity (1-10):</label>
+                                        <input type="number" class="form-control" id="custom_quantity" name="custom_quantity" 
+                                               min="1" max="10" placeholder="Enter number of tickets"
+                                               value="{% if request.method == 'POST' and request.POST.quantity == 'custom' %}{{ request.POST.custom_quantity }}{% else %}6{% endif %}">
+                                        <small class="text-muted">Select the "More" option above and enter quantity here</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Price Summary -->
+                            <div class="card price-card mb-4">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0"><i class="bi bi-receipt"></i> Order Summary</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if request.method == 'POST' %}
+                                        <!-- Show calculated prices after form submission -->
+                                        {% with selected_ticket_type=request.POST.ticket_type %}
+                                        {% with selected_quantity=request.POST.quantity %}
+                                        {% with custom_quantity=request.POST.custom_quantity %}
+                                        
+                                        {% for ticket in ticket_types %}
+                                            {% if ticket.category == selected_ticket_type %}
+                                                {% if selected_quantity == 'custom' %}
+                                                    {% with quantity=custom_quantity|default:"6"|add:"0" %}
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <p class="mb-1">Ticket Type:</p>
+                                                            <p class="mb-1">Quantity:</p>
+                                                            <p class="mb-1">Unit Price:</p>
+                                                            <hr>
+                                                            <p class="mb-0 fw-bold">Total Amount:</p>
+                                                        </div>
+                                                        <div class="col-6 text-end">
+                                                            <p class="mb-1">{{ ticket.get_category_display }}</p>
+                                                            <p class="mb-1">{{ quantity }} tickets</p>
+                                                            <p class="mb-1">KSh {{ ticket.price }}</p>
+                                                            <hr>
+                                                            <p class="mb-0 fw-bold fs-5 text-primary">
+                                                                KSh {% widthratio ticket.price 1 quantity %}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    {% endwith %}
+                                                {% else %}
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <p class="mb-1">Ticket Type:</p>
+                                                            <p class="mb-1">Quantity:</p>
+                                                            <p class="mb-1">Unit Price:</p>
+                                                            <hr>
+                                                            <p class="mb-0 fw-bold">Total Amount:</p>
+                                                        </div>
+                                                        <div class="col-6 text-end">
+                                                            <p class="mb-1">{{ ticket.get_category_display }}</p>
+                                                            <p class="mb-1">{{ selected_quantity }} tickets</p>
+                                                            <p class="mb-1">KSh {{ ticket.price }}</p>
+                                                            <hr>
+                                                            <p class="mb-0 fw-bold fs-5 text-primary">
+                                                                KSh {% widthratio ticket.price 1 selected_quantity %}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% endwith %}
+                                        {% endwith %}
+                                        {% endwith %}
+                                    {% else %}
+                                        <!-- Show default prices for first selection -->
+                                        {% with first_ticket=ticket_types.first %}
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <p class="mb-1">Ticket Type:</p>
+                                                <p class="mb-1">Quantity:</p>
+                                                <p class="mb-1">Unit Price:</p>
+                                                <hr>
+                                                <p class="mb-0 fw-bold">Total Amount:</p>
+                                            </div>
+                                            <div class="col-6 text-end">
+                                                <p class="mb-1">{{ first_ticket.get_category_display }}</p>
+                                                <p class="mb-1">1 ticket</p>
+                                                <p class="mb-1">KSh {{ first_ticket.price }}</p>
+                                                <hr>
+                                                <p class="mb-0 fw-bold fs-5 text-primary">KSh {{ first_ticket.price }}</p>
+                                            </div>
+                                        </div>
+                                        {% endwith %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="calculate" value="true" class="btn btn-info">
+                                    <i class="bi bi-calculator"></i> Calculate Total
+                                </button>
+                                <button type="submit" name="proceed" value="true" class="btn btn-success btn-lg">
+                                    <i class="bi bi-credit-card"></i> Proceed to Payment
+                                </button>
+                                <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel Booking
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS for collapse functionality only -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Pending - EVENTIFY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .spinner-border {
+            width: 4rem;
+            height: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">🎪 EVENTIFY</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <!-- Loading Spinner -->
+                <div class="spinner-border text-primary mb-4" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                
+                <h2 class="text-primary">Payment Processing</h2>
+                <p class="lead">We're waiting for your M-Pesa payment confirmation</p>
+                
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5>Payment Details</h5>
+                        <p class="mb-1"><strong>Amount:</strong> KSh {{ payment.amount }}</p>
+                        <p class="mb-1"><strong>Phone:</strong> {{ payment.phone_number }}</p>
+                        <p class="mb-1"><strong>Event:</strong> {{ payment.booking.event.title }}</p>
+                        <p class="mb-0"><strong>Status:</strong> 
+                            <span class="badge bg-warning">Pending Confirmation</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="alert alert-info mt-4">
+                    <h6><i class="bi bi-info-circle"></i> What to do next:</h6>
+                    <ol class="text-start">
+                        <li>Check your phone for M-Pesa STK Push prompt</li>
+                        <li>Enter your M-Pesa PIN to complete payment</li>
+                        <li>Wait for payment confirmation (automatic redirect)</li>
+                        <li>You'll receive an SMS from M-Pesa</li>
+                    </ol>
+                </div>
+
+               <!-- Add this to the action buttons section -->
+<div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+    <a href="{% url 'payment_pending' payment.id %}" class="btn btn-primary me-md-2">
+        <i class="bi bi-arrow-clockwise"></i> Check Status Now
+    </a>
+    <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-list-ul"></i> My Bookings
+    </a>
+</div>
+
+<!-- Add this notice -->
+<div class="alert alert-info mt-3">
+    <small>
+        <i class="bi bi-info-circle"></i> 
+        If payment doesn't update automatically, click "Check Status Now" to refresh.
+        Cancelled payments will show as failed immediately.
+    </small>
+</div>
+
+                <!-- Auto-refresh for production (remove if no JS) -->
+                <div class="mt-4">
+                    <small class="text-muted">Page will update automatically when payment is confirmed</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

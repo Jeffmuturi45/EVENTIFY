@@ -1,0 +1,82 @@
+<div class="card event-card {% if event.is_coming_soon %}coming-soon-card{% endif %}">
+    <!-- Event Image -->
+    {% if event.image %}
+    <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}" style="height: 200px; object-fit: cover;">
+    {% else %}
+    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+        <span class="text-white">No Image</span>
+    </div>
+    {% endif %}
+    
+    <!-- Status Badge -->
+    <div class="status-badge">
+        {% if event.is_coming_soon %}
+        <span class="badge bg-warning">{{ event.coming_soon_text }}</span>
+        {% elif event.is_sold_out %}
+        <span class="badge bg-danger">Sold Out</span>
+        {% elif event.status == 'ongoing' %}
+        <span class="badge bg-success">Live Now</span>
+        {% elif event.is_featured %}
+        <span class="badge bg-primary">Featured</span>
+        {% endif %}
+    </div>
+
+    <div class="card-body">
+        <!-- Event Title -->
+        <h5 class="card-title">{{ event.title }}</h5>
+        
+        <!-- Event Description -->
+        <p class="card-text text-muted small">
+            {% if event.short_description %}
+                {{ event.short_description }}
+            {% else %}
+                {{ event.description|truncatewords:20 }}
+            {% endif %}
+        </p>
+        
+        <!-- Event Details -->
+        <div class="mb-2">
+            <small class="text-muted">
+                <strong>📅 Date:</strong> {{ event.start_date|date:"M d, Y" }}<br>
+                <strong>⏰ Time:</strong> {{ event.start_date|time:"g:i A" }}<br>
+                <strong>📍 Venue:</strong> {{ event.venue }}
+            </small>
+        </div>
+
+        <!-- Ticket Prices -->
+        <div class="mb-3">
+            <small class="text-muted">
+                <strong>Ticket Prices:</strong><br>
+                {% for ticket in event.ticket_types.all %}
+                • {{ ticket.get_category_display }}: KSh {{ ticket.price }}<br>
+                {% endfor %}
+            </small>
+        </div>
+
+        <!-- Available Tickets -->
+        <div class="mb-3">
+            <small class="text-muted">
+                <strong>Available:</strong> {{ event.available_tickets }} of {{ event.total_capacity }}
+            </small>
+        </div>
+<!-- Action Button -->
+<div class="d-grid gap-2">
+    {% if event.is_coming_soon %}
+    <button class="btn btn-outline-secondary" disabled>
+        {{ event.coming_soon_text }}
+    </button>
+    {% elif event.is_sold_out %}
+    <button class="btn btn-outline-danger" disabled>Sold Out</button>
+    {% else %}
+        {% if user.is_authenticated %}
+            <a href="{% url 'create_booking' event.id %}" class="btn btn-primary">Book Now</a>
+        {% else %}
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+                Book Now
+            </button>
+        {% endif %}
+    {% endif %}
+</div>
+
+    </div>
+</div>

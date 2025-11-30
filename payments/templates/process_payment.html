@@ -1,0 +1,186 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Payment - EVENTIFY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .payment-card {
+            border-left: 4px solid #28a745;
+        }
+        .mpesa-brand {
+            background: linear-gradient(135deg, #ffc72c, #00a651);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .ticket-preview {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">🎪 EVENTIFY</a>
+            <span class="navbar-text text-light">
+                Welcome, {{ user.username }}
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <h1 class="text-success"><i class="bi bi-credit-card"></i> Complete Payment</h1>
+                    <p class="lead">Secure your tickets with M-Pesa STK Push</p>
+                </div>
+
+                <div class="row">
+                    <!-- Order Summary -->
+                    <div class="col-md-5 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-ticket-perforated"></i> Order Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <h6>{{ booking.event.title }}</h6>
+                                <p class="mb-1"><strong>Date:</strong> {{ booking.event.start_date|date:"M d, Y" }}</p>
+                                <p class="mb-1"><strong>Time:</strong> {{ booking.event.start_date|time:"g:i A" }}</p>
+                                <p class="mb-1"><strong>Venue:</strong> {{ booking.event.venue }}</p>
+                                <hr>
+                                <p class="mb-1"><strong>Ticket Type:</strong> {{ booking.get_ticket_type_display }}</p>
+                                <p class="mb-1"><strong>Quantity:</strong> {{ booking.quantity }}</p>
+                                <p class="mb-1"><strong>Unit Price:</strong> KSh {{ booking.unit_price }}</p>
+                                <hr>
+                                <h5 class="text-success">Total: KSh {{ booking.total_price }}</h5>
+                            </div>
+                        </div>
+
+                        <!-- Ticket Preview -->
+                        <div class="card mt-3">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0"><i class="bi bi-eye"></i> Ticket Preview</h6>
+                            </div>
+                            <div class="card-body ticket-preview">
+                                <div class="text-center">
+                                    <h6 class="text-primary">EVENTIFY TICKET</h6>
+                                    <h5 class="mb-2">{{ booking.event.title }}</h5>
+                                    <p class="mb-1 small">{{ booking.event.start_date|date:"M d, Y • g:i A" }}</p>
+                                    <p class="mb-1 small">{{ booking.event.venue }}</p>
+                                    <hr>
+                                    <p class="mb-1"><strong>{{ booking.get_ticket_type_display }} Ticket</strong></p>
+                                    <p class="mb-1">Quantity: {{ booking.quantity }}</p>
+                                    <p class="mb-0 text-success">KSh {{ booking.total_price }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="col-md-7">
+                        <div class="card payment-card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-shield-check"></i> M-Pesa Payment</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- M-Pesa Brand -->
+                                <div class="mpesa-brand mb-4">
+                                    <i class="bi bi-phone"></i> M-PESA STK PUSH
+                                </div>
+
+                                <!-- Instructions -->
+                                <div class="alert alert-info">
+                                    <h6><i class="bi bi-info-circle"></i> Payment Instructions</h6>
+                                    <ol class="mb-0 small">
+                                        <li>Enter your M-Pesa registered phone number</li>
+                                        <li>Click "Initiate Payment"</li>
+                                        <li>Check your phone for STK Push prompt</li>
+                                        <li>Enter your M-Pesa PIN to complete payment</li>
+                                        <li>You'll receive your e-ticket via email</li>
+                                    </ol>
+                                </div>
+
+                                <!-- Payment Form -->
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    
+                                    <!-- Phone Number Input Section -->
+<div class="mb-4">
+    <label for="phone_number" class="form-label fw-bold">
+        <i class="bi bi-telephone"></i> M-Pesa Phone Number
+    </label>
+    <input type="tel" class="form-control form-control-lg" 
+           id="phone_number" name="phone_number" 
+           placeholder="e.g., 07XXXXXXXX, 01XXXXXXXX, 254XXXXXXXXX" required
+           pattern="^(0[17]\d{8}|254[17]\d{8}|[17]\d{8}|\+254[17]\d{8})$"
+           title="Enter a valid Kenyan phone number (07XXXXXXXX, 01XXXXXXXX, 254XXXXXXXXX)">
+    <div class="form-text">
+        <strong>Accepted formats:</strong><br>
+        • 07XXXXXXXX (Safaricom/Airtel)<br>
+        • 01XXXXXXXX (Telkom/Faiba)<br>
+        • 254XXXXXXXXX (International format)<br>
+        • +254XXXXXXXXX (International format with +)
+    </div>
+</div>
+
+<!-- Server-side validation message -->
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'phone' in message.tags or 'valid' in message.tags %}
+            <div class="text-danger small mt-1">
+                <i class="bi bi-exclamation-triangle"></i> {{ message }}
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+                                    <!-- Amount Display -->
+                                    <div class="card bg-light mb-4">
+                                        <div class="card-body text-center">
+                                            <h4 class="text-success mb-0">
+                                                <i class="bi bi-cash-coin"></i> 
+                                                KSh {{ booking.total_price }}
+                                            </h4>
+                                            <small class="text-muted">Amount to be deducted</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="bi bi-lock"></i> Initiate Payment
+                                        </button>
+                                        <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-left"></i> Back to My Bookings
+                                        </a>
+                                    </div>
+                                </form>
+
+                                <!-- Security Notice -->
+                                <div class="alert alert-warning mt-4">
+                                    <h6><i class="bi bi-shield-check"></i> Secure Payment</h6>
+                                    <p class="mb-0 small">Your payment is secured with M-Pesa. We don't store your M-Pesa PIN.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

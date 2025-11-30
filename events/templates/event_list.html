@@ -1,0 +1,229 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVENTIFY - Discover Amazing Events</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+    /* Add this to fix footer */
+    html, body {
+        height: 100%;
+    }
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    .content {
+        flex: 1;
+    }
+    
+    .event-card {
+        transition: transform 0.3s ease;
+        margin-bottom: 20px;
+    }
+    .event-card:hover {
+        transform: translateY(-5px);
+    }
+    .status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+    }
+    .coming-soon-card {
+        opacity: 0.8;
+    }
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 80px 0;
+        margin-bottom: 50px;
+    }
+</style>
+</head>
+<body>
+    <!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">🎪 EVENTIFY</a>
+        
+        <!-- Navbar Toggler for Mobile -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <!-- Welcome Message & My Bookings for Logged-in Users -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my_bookings' %}">
+                            <i class="bi bi-ticket-perforated"></i> My Bookings
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'my_bookings' %}">
+                                <i class="bi bi-list-ul"></i> My Bookings
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <!-- Login/Register for Guests -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <i class="bi bi-person-plus"></i> Register
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+    <!-- Hero Section -->
+<section class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">Discover Unforgettable Events</h1>
+        <p class="lead mb-4">Book tickets for concerts, conferences, sports and more</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="#available-events" class="btn btn-light btn-lg">
+                <i class="bi bi-calendar-event"></i> Explore Events
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'my_bookings' %}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-ticket-perforated"></i> My Bookings
+            </a>
+            {% else %}
+            <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-star"></i> Get Started
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats Section -->
+{% if user.is_authenticated %}
+<div class="bg-light py-3">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <a href="{% url 'my_bookings' %}" class="text-decoration-none text-dark">
+                    <h5 class="mb-1">{{ user.booking_set.count }}</h5>
+                    <small class="text-muted">Total Bookings</small>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'my_bookings' %}?status=confirmed" class="text-decoration-none text-dark">
+                    <h5 class="mb-1 text-success">{{ user.booking_set.confirmed.count }}</h5>
+                    <small class="text-muted">Confirmed</small>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'my_bookings' %}?status=pending" class="text-decoration-none text-dark">
+                    <h5 class="mb-1 text-warning">{{ user.booking_set.pending.count }}</h5>
+                    <small class="text-muted">Pending</small>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'my_bookings' %}" class="text-decoration-none text-dark">
+                    <h5 class="mb-1 text-info">{{ user.booking_set.upcoming.count }}</h5>
+                    <small class="text-muted">Upcoming</small>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+    <div class="container">
+        <!-- Featured Events -->
+        {% if featured_events %}
+        <section class="mb-5">
+            <h2 class="mb-4">🔥 Featured Events</h2>
+            <div class="row">
+                {% for event in featured_events %}
+                <div class="col-md-6 col-lg-4">
+                    {% include 'event_card.html' with event=event %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Available Events -->
+        <section id="available-events" class="mb-5">
+            <h2 class="mb-4">🎟️ Available Events</h2>
+            {% if available_events %}
+            <div class="row">
+                {% for event in available_events %}
+                <div class="col-md-6 col-lg-4">
+                    {% include 'event_card.html' with event=event %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                <h4>No events available at the moment</h4>
+                <p class="mb-0">Check back later for new events!</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Coming Soon Events -->
+        {% if coming_soon_events %}
+        <section class="mb-5">
+            <h2 class="mb-4">🚀 Coming Soon</h2>
+            <div class="row">
+                {% for event in coming_soon_events %}
+                <div class="col-md-6 col-lg-4">
+                    {% include 'event_card.html' with event=event %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <!-- Floating Action Button for Mobile (My Bookings) -->
+{% if user.is_authenticated %}
+<div class="d-lg-none">
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1030;">
+        <a href="{% url 'my_bookings' %}" class="btn btn-primary btn-lg rounded-pill shadow-lg" 
+           style="padding: 12px 20px;">
+            <i class="bi bi-ticket-perforated"></i>
+            <span class="ms-1">My Bookings</span>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-auto">
+        <div class="container text-center">
+            <p>&copy; 2025 EVENTIFY. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
