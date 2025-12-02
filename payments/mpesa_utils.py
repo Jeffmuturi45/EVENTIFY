@@ -5,6 +5,7 @@ import json
 from django.conf import settings
 from django.utils import timezone
 
+
 class MpesaGateway:
     def __init__(self):
         self.consumer_key = settings.MPESA_CONSUMER_KEY
@@ -33,12 +34,12 @@ class MpesaGateway:
         try:
             response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
-            
+
             data = response.json()
             self.access_token = data.get('access_token')
             # Token expires in 1 hour, set expiry to 55 minutes for safety
             self.token_expiry = timezone.now() + timezone.timedelta(minutes=55)
-            
+
             return self.access_token
         except requests.exceptions.RequestException as e:
             print(f"Error getting access token: {e}")
@@ -81,9 +82,10 @@ class MpesaGateway:
         }
 
         try:
-            response = requests.post(url, json=payload, headers=headers, timeout=30)
+            response = requests.post(
+                url, json=payload, headers=headers, timeout=30)
             response.raise_for_status()
-            
+
             data = response.json()
             return data, None
         except requests.exceptions.RequestException as e:
@@ -91,7 +93,7 @@ class MpesaGateway:
             return None, str(e)
 
     def check_transaction_status(self, checkout_request_id):
-        """Check M-Pesa transaction status"""
+        """Check M-Pesa transaction status - IMPROVED VERSION"""
         access_token = self.get_access_token()
         if not access_token:
             return None, "Failed to get access token"
@@ -114,11 +116,30 @@ class MpesaGateway:
         }
 
         try:
-            response = requests.post(url, json=payload, headers=headers, timeout=30)
+            response = requests.post(
+                url, json=payload, headers=headers, timeout=30)
             response.raise_for_status()
-            
+
             data = response.json()
-            return data, None
+
+            # Debug logging
+            print(f"M-Pesa Status Response: {data}")
+
+            # Check for actual result code
+            if 'ResultCode' in data:
+                result_code = data['ResultCode']
+                result_desc = data.get('ResultDesc', '')
+
+                if result_code == 0:
+                    # Payment successful
+                    return {'status': 'successful', 'message': result_desc, 'data': data}, None
+                else:
+                    # Payment failed or cancelled
+                    return {'status': 'failed', 'message': result_desc, 'data': data}, None
+            else:
+                # No result code yet - still processing
+                return {'status': 'pending', 'message': 'Transaction still processing', 'data': data}, None
+
         except requests.exceptions.RequestException as e:
             print(f"Error checking transaction: {e}")
             return None, str(e)

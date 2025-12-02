@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Add this meta tag in the head for auto-refresh -->
+    <meta http-equiv="refresh" content="10; url={% url 'payment_pending' payment.id %}">                
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Pending - EVENTIFY</title>
@@ -42,24 +44,36 @@
                         </p>
                     </div>
                 </div>
+<!-- Add this meta tag in the head for auto-refresh -->
+<meta http-equiv="refresh" content="10; url={% url 'payment_pending' payment.id %}">
 
-                <!-- Instructions -->
-                <div class="alert alert-info mt-4">
-                    <h6><i class="bi bi-info-circle"></i> What to do next:</h6>
-                    <ol class="text-start">
-                        <li>Check your phone for M-Pesa STK Push prompt</li>
-                        <li>Enter your M-Pesa PIN to complete payment</li>
-                        <li>Wait for payment confirmation (automatic redirect)</li>
-                        <li>You'll receive an SMS from M-Pesa</li>
-                    </ol>
-                </div>
+<!-- Update the instructions section -->
+<div class="alert alert-info mt-4">
+    <h6><i class="bi bi-info-circle"></i> What's happening?</h6>
+    <ol class="text-start">
+        <li>Check your phone - you should have received an M-Pesa prompt</li>
+        <li>Enter your M-Pesa PIN to complete payment</li>
+        <li>Wait for M-Pesa confirmation SMS</li>
+        <li>This page will <strong>auto-refresh every 10 seconds</strong></li>
+        <li>Or click "Check Status Now" to refresh manually</li>
+    </ol>
+    
+    <!-- Status Check Information -->
+    <div class="mt-3">
+        <small class="text-muted">
+            <i class="bi bi-clock"></i> 
+            Last checked: {% now "H:i:s" %}
+            (Next check in 10 seconds)
+        </small>
+    </div>
+</div>
 
-               <!-- Add this to the action buttons section -->
+<!-- Manual Check Button -->
 <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-    <a href="{% url 'payment_pending' payment.id %}" class="btn btn-primary me-md-2">
+    <a href="{% url 'payment_pending' payment.id %}" class="btn btn-primary btn-lg me-md-2">
         <i class="bi bi-arrow-clockwise"></i> Check Status Now
     </a>
-    <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary">
+    <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary btn-lg">
         <i class="bi bi-list-ul"></i> My Bookings
     </a>
 </div>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #000000ff;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .ticket-section {
+            margin: 20px 0;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-item {
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .highlight {
+            color: #667eea;
+            font-weight: bold;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+        .badge-vip {
+            background: #ffc107;
+            color: #000;
+        }
+        .badge-vvip {
+            background: #6f42c1;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎪 EVENTIFY</h1>
+        <p>Your Event Ticket Confirmation</p>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{ user.get_full_name|default:user.username }},</h2>
+        <p>Thank you for your booking! Your ticket has been confirmed successfully.</p>
+        
+        <div class="ticket-section">
+            <h3>Event Details</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Event:</strong><br>
+                    <span class="highlight">{{ booking.event.title }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Date:</strong><br>
+                    <span class="highlight">{{ booking.event.start_date|date:"l, F d, Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Time:</strong><br>
+                    <span class="highlight">{{ booking.event.start_date|time:"g:i A" }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Venue:</strong><br>
+                    <span class="highlight">{{ booking.event.venue }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ticket-section">
+            <h3>Ticket Information</h3>
+            <p>
+                <strong>Ticket Type:</strong> 
+                {{ booking.get_ticket_type_display }}
+                <span class="badge badge-{% if booking.ticket_type == 'vip' %}vip{% elif booking.ticket_type == 'vvip' %}vvip{% else %}success{% endif %}">
+                    {{ booking.get_ticket_type_display|upper }}
+                </span>
+            </p>
+            <p><strong>Quantity:</strong> {{ booking.quantity }} ticket(s)</p>
+            <p><strong>Booking ID:</strong> #{{ booking.id }}</p>
+            <p><strong>Transaction ID:</strong> {{ payment.mpesa_receipt_number }}</p>
+        </div>
+        
+        <div class="ticket-section">
+            <h3>Price Summary</h3>
+            <p><strong>Unit Price:</strong> KSh {{ booking.unit_price }}</p>
+            <p><strong>Quantity:</strong> {{ booking.quantity }}</p>
+            <p><strong>Total Amount:</strong> <span class="highlight">KSh {{ booking.total_price }}</span></p>
+            <p><strong>Payment Status:</strong> {{ payment.get_status_display }}</p>
+        </div>
+        
+        <div class="ticket-section">
+            <h3>Important Information</h3>
+            <ul>
+                <li>Your e-ticket is attached as a PDF file</li>
+                <li>Present the PDF ticket at the event entrance</li>
+                <li>Keep this email for your records</li>
+                <li>Arrive at least 30 minutes before the event starts</li>
+                <li>Bring a valid ID for verification</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>If you have any questions, please contact our support team at support@eventify.com</p>
+            <p>Thank you for choosing EVENTIFY!</p>
+            <p><small>This is an automated email, please do not reply.</small></p>
+        </div>
+    </div>
+</body>
+</html>
