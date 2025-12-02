@@ -155,26 +155,27 @@
                     </div>
                 </div>
 
-                <!-- Next Steps -->
-                <div class="row mt-4">
-                    <div class="col-md-4 mb-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <i class="bi bi-envelope display-6 text-primary mb-3"></i>
-                                <h6>Check Email</h6>
-                                <p class="small text-muted">E-ticket sent to your email address</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <i class="bi bi-phone display-6 text-success mb-3"></i>
-                                <h6>Save Ticket</h6>
-                                <p class="small text-muted">Screenshot this ticket for offline access</p>
-                            </div>
-                        </div>
-                    </div>
+               <!-- Email Confirmation -->
+<div class="alert alert-success">
+    <h6><i class="bi bi-envelope-check"></i> Email Sent!</h6>
+    <p class="mb-0">
+        Your e-ticket has been sent to <strong>{{ booking.user.email }}</strong>. 
+        Check your inbox (and spam folder) for the PDF ticket.
+    </p>
+</div>
+
+<!-- Download Ticket Button -->
+<div class="text-center mt-4">
+    <div class="alert alert-info">
+        <p class="mb-2">
+            <i class="bi bi-download"></i> 
+            <strong>Can't find the email?</strong> Save or print this page as your ticket.
+        </p>
+        <button onclick="window.print()" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-printer"></i> Print Ticket
+        </button>
+    </div>
+</div>
                     <div class="col-md-4 mb-3">
                         <div class="card text-center">
                             <div class="card-body">

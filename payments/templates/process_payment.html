@@ -112,28 +112,59 @@
                                     </ol>
                                 </div>
 
-                                <!-- Payment Form -->
-                                <form method="POST">
-                                    {% csrf_token %}
-                                    
-                                    <!-- Phone Number Input Section -->
-<div class="mb-4">
-    <label for="phone_number" class="form-label fw-bold">
-        <i class="bi bi-telephone"></i> M-Pesa Phone Number
-    </label>
-    <input type="tel" class="form-control form-control-lg" 
-           id="phone_number" name="phone_number" 
-           placeholder="e.g., 07XXXXXXXX, 01XXXXXXXX, 254XXXXXXXXX" required
-           pattern="^(0[17]\d{8}|254[17]\d{8}|[17]\d{8}|\+254[17]\d{8})$"
-           title="Enter a valid Kenyan phone number (07XXXXXXXX, 01XXXXXXXX, 254XXXXXXXXX)">
-    <div class="form-text">
-        <strong>Accepted formats:</strong><br>
-        • 07XXXXXXXX (Safaricom/Airtel)<br>
-        • 01XXXXXXXX (Telkom/Faiba)<br>
-        • 254XXXXXXXXX (International format)<br>
-        • +254XXXXXXXXX (International format with +)
-    </div>
-</div>
+ <!-- Only show payment form for paid tickets -->
+{% if booking.total_price > 0 %}
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Phone Number Input -->
+        <div class="mb-4">
+            <label for="phone_number" class="form-label fw-bold">
+                <i class="bi bi-telephone"></i> M-Pesa Phone Number
+            </label>
+            <input type="tel" class="form-control form-control-lg" 
+                   id="phone_number" name="phone_number" 
+                   placeholder="e.g., 07XXXXXXXX, 01XXXXXXXX, 254XXXXXXXXX" required>
+            <div class="form-text">
+                Enter your M-Pesa registered phone number
+            </div>
+        </div>
+
+        <!-- Amount Display -->
+        <div class="card bg-light mb-4">
+            <div class="card-body text-center">
+                <h4 class="text-success mb-0">
+                    <i class="bi bi-cash-coin"></i> 
+                    KSh {{ booking.total_price }}
+                </h4>
+                <small class="text-muted">Amount to be deducted</small>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-lock"></i> Initiate M-Pesa Payment
+            </button>
+            <p class="text-center small text-muted mt-2">
+                You'll receive an STK Push on your phone to enter your M-Pesa PIN
+            </p>
+        </div>
+    </form>
+{% else %}
+    <!-- Free Ticket Form -->
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="free_ticket" value="true">
+        <div class="alert alert-success text-center">
+            <h4><i class="bi bi-gift"></i> Free Ticket!</h4>
+            <p class="mb-3">No payment required. Click below to confirm your ticket.</p>
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle"></i> Confirm Free Ticket
+            </button>
+        </div>
+    </form>
+{% endif %}                              
 
 <!-- Server-side validation message -->
     {% if messages %}
@@ -146,27 +177,6 @@
         {% endfor %}
     {% endif %}
 </div>
-                                    <!-- Amount Display -->
-                                    <div class="card bg-light mb-4">
-                                        <div class="card-body text-center">
-                                            <h4 class="text-success mb-0">
-                                                <i class="bi bi-cash-coin"></i> 
-                                                KSh {{ booking.total_price }}
-                                            </h4>
-                                            <small class="text-muted">Amount to be deducted</small>
-                                        </div>
-                                    </div>
-
-                                    <!-- Action Buttons -->
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-success btn-lg">
-                                            <i class="bi bi-lock"></i> Initiate Payment
-                                        </button>
-                                        <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary">
-                                            <i class="bi bi-arrow-left"></i> Back to My Bookings
-                                        </a>
-                                    </div>
-                                </form>
 
                                 <!-- Security Notice -->
                                 <div class="alert alert-warning mt-4">

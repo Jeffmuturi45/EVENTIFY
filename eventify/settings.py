@@ -5,6 +5,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Simple environment variable loader
+
+
 def get_env_variable(key, default=None):
     """
     Get environment variable from .env file or system environment
@@ -19,17 +21,32 @@ def get_env_variable(key, default=None):
                     key_val = line.split('=', 1)
                     if len(key_val) == 2 and key_val[0].strip() == key:
                         return key_val[1].strip()
-    
+
     # Fallback to system environment
     return os.environ.get(key, default)
 
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_env_variable('SECRET_KEY', 'django-insecure-dev-key-1234567890abcdef')
+SECRET_KEY = get_env_variable(
+    'SECRET_KEY', 'django-insecure-dev-key-1234567890abcdef')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = get_env_variable('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = get_env_variable('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = get_env_variable(
+#     '127.0.0.1:8000', 'eb5b96bd9ea6.ngrok-free.app').split(',')
+
+# Email Configuration
+EMAIL_BACKEND = get_env_variable(
+    'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = get_env_variable('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(get_env_variable('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = get_env_variable('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = get_env_variable('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = get_env_variable(
+    'DEFAULT_FROM_EMAIL', 'noreply@eventify.com')
 
 # Application definition
 INSTALLED_APPS = [
@@ -40,7 +57,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'events',
-    'users', 
+    'users',
     'bookings',
     'payments',
 ]
@@ -119,8 +136,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # M-Pesa Configuration (with development defaults)
-MPESA_CONSUMER_KEY = get_env_variable('MPESA_CONSUMER_KEY', 'test_consumer_key_dev')
-MPESA_CONSUMER_SECRET = get_env_variable('MPESA_CONSUMER_SECRET', 'test_consumer_secret_dev')
+MPESA_CONSUMER_KEY = get_env_variable(
+    'MPESA_CONSUMER_KEY', 'test_consumer_key_dev')
+MPESA_CONSUMER_SECRET = get_env_variable(
+    'MPESA_CONSUMER_SECRET', 'test_consumer_secret_dev')
 MPESA_SHORTCODE = get_env_variable('MPESA_SHORTCODE', '174379')
 MPESA_PASSKEY = get_env_variable('MPESA_PASSKEY', 'test_passkey_dev')
-MPESA_CALLBACK_URL = get_env_variable('MPESA_CALLBACK_URL', 'https://example.com/callback')
+MPESA_CALLBACK_URL = get_env_variable(
+    'MPESA_CALLBACK_URL', 'https://example.com/callback')
