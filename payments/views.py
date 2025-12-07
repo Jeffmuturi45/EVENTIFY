@@ -188,53 +188,50 @@ def handle_free_ticket(request, booking, existing_payment=None):
 
 @login_required
 def payment_pending(request, payment_id):
-    """Show pending payment page and check real status"""
+    """Show pending payment page and check M-Pesa status - NO JS version"""
     payment = get_object_or_404(Payment, id=payment_id, user=request.user)
 
-    # Check current status first
+    # If payment is already successful, redirect to success
     if payment.status == 'successful':
-        messages.success(request, "Payment confirmed successfully!")
         return redirect('payment_success', payment_id=payment.id)
-    elif payment.status == 'failed':
-        messages.error(request, "Payment failed. Please try again.")
+
+    # If payment already failed, redirect to failed page
+    if payment.status == 'failed':
         return redirect('payment_failed', payment_id=payment.id)
 
-    # For pending payments, ALWAYS check M-Pesa status
-    if payment.status == 'pending':
-        try:
-            status, message = payment.check_mpesa_status()
-            print(f"Status check result: {status}, {message}")
+    # At this point, payment.status == 'pending'
+    # Try checking M-Pesa status (STK query)
+    if payment.checkout_request_id:
+        mpesa = MpesaGateway()
+        status_data, error = mpesa.check_transaction_status(
+            payment.checkout_request_id)
 
-            if status == 'successful':
-                # Payment successful - send email
+        if status_data:
+            # Update payment status based on STK query result
+            # 'successful', 'failed', or 'pending'
+            new_status = status_data['status']
+            payment.status = new_status
+            payment.result_desc = status_data.get('message', '')
+            payment.save()
+
+            # If payment is now successful, send ticket email and redirect
+            if new_status == 'successful':
                 booking = payment.booking
                 try:
-                    success, email_message = send_ticket_email(
-                        booking, payment)
-                    if success:
-                        messages.success(
-                            request, f"Payment confirmed! Ticket sent to {booking.user.email}")
-                    else:
-                        messages.warning(
-                            request, f"Payment confirmed but email failed: {email_message}")
-                except Exception as e:
-                    messages.success(
-                        request, "Payment confirmed successfully!")
-
+                    send_ticket_email(booking, payment)
+                except Exception:
+                    pass  # Fail silently for email
                 return redirect('payment_success', payment_id=payment.id)
-            elif status == 'failed':
-                messages.error(request, f"Payment failed: {message}")
-                return redirect('payment_failed', payment_id=payment.id)
-            else:
-                # Still pending
-                messages.info(
-                    request, "Payment is still processing. Please wait for confirmation...")
-        except Exception as e:
-            print(f"Error checking status: {e}")
-            messages.warning(
-                request, "Payment processing... Please check your phone for M-Pesa confirmation.")
 
-    context = {'payment': payment}
+            # If payment failed, redirect to failed page
+            elif new_status == 'failed':
+                return redirect('payment_failed', payment_id=payment.id)
+
+        # If still pending (e.g., 4999), continue to render pending page
+
+    context = {
+        'payment': payment,
+    }
     return render(request, 'payment_pending.html', context)
 
 

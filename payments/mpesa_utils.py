@@ -85,7 +85,7 @@ class MpesaGateway:
             return None, str(e)
 
     def check_transaction_status(self, checkout_request_id):
-        """Check M-Pesa transaction status - IMPROVED VERSION"""
+        """Check M-Pesa transaction status - improved version"""
         access_token = self.get_access_token()
         if not access_token:
             return None, "Failed to get access token"
@@ -117,19 +117,21 @@ class MpesaGateway:
             # Debug logging
             print(f"M-Pesa Status Response: {data}")
 
-            # Check for actual result code
+            # ✅ Replace the old ResultCode check with this new block
             if 'ResultCode' in data:
                 result_code = data['ResultCode']
                 result_desc = data.get('ResultDesc', '')
 
                 if result_code == 0:
-                    # Payment successful
                     return {'status': 'successful', 'message': result_desc, 'data': data}, None
+                elif result_code == 4999:
+                    # Still processing
+                    return {'status': 'pending', 'message': result_desc, 'data': data}, None
                 else:
                     # Payment failed or cancelled
                     return {'status': 'failed', 'message': result_desc, 'data': data}, None
             else:
-                # No result code yet - still processing
+                # No ResultCode yet - treat as pending
                 return {'status': 'pending', 'message': 'Transaction still processing', 'data': data}, None
 
         except requests.exceptions.RequestException as e:
