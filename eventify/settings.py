@@ -33,7 +33,7 @@ SECRET_KEY = get_env_variable(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = get_env_variable('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['eventify-jade-one.vercel.app', 'localhost', '127.0.0.1']
 # ALLOWED_HOSTS = get_env_variable(
 #     '127.0.0.1:8000', 'eb5b96bd9ea6.ngrok-free.app').split(',')
 
