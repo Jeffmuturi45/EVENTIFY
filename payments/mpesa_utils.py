@@ -17,32 +17,24 @@ class MpesaGateway:
         self.token_expiry = None
 
     def get_access_token(self):
-        """Get M-Pesa API access token"""
-        # Check if we have a valid token
         if self.access_token and self.token_expiry and self.token_expiry > timezone.now():
             return self.access_token
 
-        # Get new token
         url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
         auth_string = f"{self.consumer_key}:{self.consumer_secret}"
         encoded_auth = base64.b64encode(auth_string.encode()).decode()
-
-        headers = {
-            'Authorization': f'Basic {encoded_auth}'
-        }
+        headers = {'Authorization': f'Basic {encoded_auth}'}
 
         try:
             response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
-
             data = response.json()
             self.access_token = data.get('access_token')
-            # Token expires in 1 hour, set expiry to 55 minutes for safety
             self.token_expiry = timezone.now() + timezone.timedelta(minutes=55)
-
             return self.access_token
         except requests.exceptions.RequestException as e:
             print(f"Error getting access token: {e}")
+            self.access_token = None
             return None
 
     def generate_password(self, timestamp):
